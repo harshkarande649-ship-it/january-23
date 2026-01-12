@@ -6,6 +6,8 @@
   <title>Birthday Protocol | Director Arsha</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=Dancing+Script:wght@700&family=JetBrains+Mono:wght@400;700&family=Pacifico&family=Patrick+Hand&family=Russo+One&display=swap" rel="stylesheet" />
+  
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&family=Montserrat:wght@300;500&display=swap" rel="stylesheet">
     
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -24,7 +26,7 @@
     body {
         background-color: var(--soft-cream); 
         font-family: 'Plus Jakarta Sans', sans-serif; 
-        overflow: hidden;
+        overflow: hidden; /* Global overflow hidden to prevent scroll on other screens */
     }
 
     .screen {
@@ -215,6 +217,161 @@
     .lyric-line.active { opacity: 1; transform: scale(1.1); color: #ff2a6d; text-shadow: 0 2px 10px rgba(255, 42, 109, 0.2); }
     .float { animation: floating 6s ease-in-out infinite; }
     @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+    /* --- FIXED LETTER STYLES --- */
+    #screen-6 {
+        /* Enable scrolling for this specific screen so the button is never lost */
+        overflow-y: auto !important; 
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* Start from top so scrolling works correctly */
+        justify-content: flex-start; 
+        padding-top: 4rem;
+        padding-bottom: 8rem; /* Extra space at bottom for the button */
+        background-color: #f0f2f5;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d1d5db' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    /* Custom scrollbar for this screen only */
+    #screen-6::-webkit-scrollbar { width: 8px; }
+    #screen-6::-webkit-scrollbar-track { background: transparent; }
+    #screen-6::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 4px; }
+
+    .paper {
+        background-color: #fffbf0;
+        /* Adjusted line height to 1.8rem for better fit */
+        background-image: linear-gradient(#e8e6e1 1px, transparent 1px);
+        background-size: 100% 1.8rem; 
+        width: 100%;
+        max-width: 550px; /* Slightly narrower */
+        padding: 2.5rem 3rem; /* Reduced padding */
+        position: relative;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        transform: rotate(-1deg);
+        border: 1px solid #e5e5e5;
+        font-family: 'Cormorant Garamond', serif;
+        margin-bottom: 3rem; /* Push button away from paper */
+        flex-shrink: 0; /* Prevent paper from squishing */
+    }
+
+    .paper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 30px;
+        height: 100%;
+        width: 2px;
+        background-color: rgba(255, 99, 71, 0.2);
+    }
+
+    .content-letter {
+        font-size: 1.2rem; /* Slightly smaller text */
+        line-height: 1.8rem; /* Matches new background size */
+        color: #2d3748;
+        z-index: 2;
+        position: relative;
+    }
+
+    .content-letter p {
+        margin-bottom: 1.8rem; /* Matches line height gap */
+    }
+
+    .highlight { color: #c05621; font-weight: 600; }
+
+    .header-letter {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.8rem;
+        color: #555;
+        margin-bottom: 1.8rem;
+        letter-spacing: 0.05em;
+    }
+    
+    .stamp {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 80px;
+        height: 90px;
+        border: 3px double #dca5a5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #dca5a5;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transform: rotate(5deg);
+        opacity: 0.7;
+        text-align: center;
+        padding: 5px;
+        font-weight: bold;
+    }
+
+    .signature {
+        margin-top: 2rem;
+        text-align: right;
+    }
+
+    .sign-off {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.8rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 0.5rem;
+    }
+
+    .name {
+        font-family: 'Great Vibes', cursive;
+        font-size: 2rem;
+        color: #2d3748;
+        transform: rotate(-5deg);
+        display: inline-block;
+    }
+    
+    .tape {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 35px;
+        background-color: rgba(255, 255, 255, 0.4);
+        border-left: 2px dashed rgba(0,0,0,0.1);
+        border-right: 2px dashed rgba(0,0,0,0.1);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        opacity: 0.6;
+        z-index: 10;
+    }
+
+    /* Ensure button is visible */
+    #finale-btn {
+        z-index: 50;
+        position: relative;
+        background-color: #1a1a1a;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 9999px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    #finale-btn:hover {
+        background-color: #333;
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 640px) {
+        .paper { padding: 1.5rem; width: 90%; }
+        .paper::before { left: 20px; }
+    }
+    /* --- END FIXED STYLES --- */
+
   </style>
 </head>
 <body>
@@ -439,22 +596,41 @@
       </div>
     </section>
 
-    <section id="screen-6" class="screen bg-gray-50">
-      <div class="bg-white p-8 md:p-12 max-w-xl w-full shadow-2xl relative mx-4 border-l-8 border-pink-500" style="background-image: linear-gradient(#e1e1e1 1px, transparent 1px); background-size: 100% 1.6rem;">
-        <div class="absolute -top-4 -right-4 w-16 h-16 bg-pink-200 rounded-full flex items-center justify-center shadow-lg rotate-12 text-2xl">💖</div>
+    <section id="screen-6" class="screen">
+      <div class="paper">
+        <div class="tape"></div>
         
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 font-mono tracking-tighter">To: Arsha (The Director)</h2>
-        
-        <div id="typewriter-text" class="font-['Patrick_Hand'] text-2xl leading-relaxed text-gray-700 min-h-[250px]">
-          </div>
-
-        <div class="mt-10 text-right">
-          <p class="font-bold text-gray-500 text-xs uppercase">With Gary energy,</p>
-          <p class="font-['Dancing_Script'] text-3xl text-pink-500">Your Favorite Donkey 🐾</p>
+        <div class="stamp">
+            Priority<br>Mail<br>★
         </div>
-        
-        <button onclick="goToFinale()" class="mt-10 w-full bg-black text-white py-3 rounded text-sm uppercase tracking-widest font-bold hover:bg-gray-800 transition">One Last Surprise...</button>
+
+        <div class="header-letter">
+            <strong>To:</strong> Arsha (The Director)<br>
+            <strong>Date:</strong> 23.01.2026
+        </div>
+
+        <div class="content-letter">
+            <p>
+                They say everything happens for a reason, but meeting you feels like the best glitch in the system.
+            </p>
+            <p>
+                One day I'm just a 'Donkey' minding my own business, and the next, I’m 'forcefully' recruited into the world of a very specific, very stubborn Director.
+            </p>
+            <p>
+                Thank you for being the person I can talk to about absolutely nothing and feel like it was the best part of my day. You have a beautiful heart, even if you try to hide it behind a wall of roasts.
+            </p>
+            <p>
+                Happy Birthday, <span class="highlight">Piggy</span>. I'm glad we happened.
+            </p>
+        </div>
+
+        <div class="signature">
+            <div class="sign-off">With Gary energy,</div>
+            <div class="name">Your Favorite Donkey 🐾</div>
+        </div>
       </div>
+      
+      <button id="finale-btn" onclick="goToFinale()">One Last Surprise...</button>
     </section>
 
     <section id="screen-7" class="screen">
@@ -675,7 +851,8 @@
 
       // Update Arrow Controls Visibility
       const navControls = document.getElementById('nav-controls');
-      if (idx > 1 && idx < 7) {
+      // HIDDEN on idx 6 (Letter) now. Only visible 2,3,4,5.
+      if (idx > 1 && idx < 6) {
         navControls.style.opacity = '1';
         navControls.style.pointerEvents = 'auto';
       } else {
@@ -693,7 +870,6 @@
          stopLyricsVisuals();
       }
 
-      if (idx === 6) typeLetter();
       if (idx === 7) {
         window.dispatchEvent(new Event('resize'));
       }
@@ -717,7 +893,9 @@
         const letterScreen = document.getElementById('screen-6');
         const curtain = document.getElementById('blackout-curtain');
         const curtainText = document.getElementById('blackout-text');
-        const finaleBtn = letterScreen.querySelector('button');
+        
+        // This button now has an explicit ID
+        const finaleBtn = document.getElementById('finale-btn');
 
         finaleBtn.innerText = "Here we go...";
         finaleBtn.classList.add('finale-btn-active');
@@ -926,25 +1104,6 @@
           cap.innerText = photos[photoIdx].caption; 
           img.style.opacity = '1'; 
       }, 300);
-    }
-
-    const letter = "They say everything happens for a reason, but meeting you feels like the best glitch in the system. \n\nOne day I'm just a 'Gadhva' minding my own business, and the next, I’m 'forcefully' recruited into the world of a very specific, very stubborn Director. \n\nThank you for being the person I can talk to about absolutely nothing and feel like it was the best part of my day. You have a beautiful heart, even if you try to hide it behind a wall of roasts. \n\nHappy Birthday, Piggy. I'm glad we happened.";
-    let typeWriterRunning = false;
-    
-    function typeLetter() {
-      if(typeWriterRunning) return;
-      typeWriterRunning = true;
-      const el = document.getElementById('typewriter-text');
-      el.innerHTML = '';
-      let i = 0;
-      function type() {
-        if (i < letter.length) {
-          el.innerHTML += letter.charAt(i) === '\n' ? '<br>' : letter.charAt(i);
-          i++;
-          setTimeout(type, 40);
-        }
-      }
-      type();
     }
 
     function initBubbles() {
