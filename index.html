@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Birthday Protocol | Director Arsha</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=Dancing+Script:wght@700&family=JetBrains+Mono:wght@400;700&family=Pacifico&family=Patrick+Hand&family=Russo+One&display=swap" rel="stylesheet" />
+    
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    :root {
+      --brat-pink: #ffafcc;
+      --hot-pink: #ff2a6d;
+      --soft-cream: #fff5f8;
+      --lab-grey: #2d3436;
+    }
+
+    body {
+        background-color: var(--soft-cream); 
+        font-family: 'Plus Jakarta Sans', sans-serif; 
+        overflow: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100dvh;
+      display: none; 
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      transition: all 0.8s ease-in-out;
+      transform: scale(0.95);
+      opacity: 0;
+      z-index: 10;
+      background-color: var(--soft-cream);
+      box-sizing: border-box;
+    }
+
+    .screen.active {
+      display: flex;
+      opacity: 1 !important;
+      transform: scale(1);
+      z-index: 20;
+    }
+
+    /* LOCK SCREEN STYLES */
+    #screen-0 {
+        background-color: #1a1a1a;
+        color: #ffafcc;
+        z-index: 100;
+    }
+    
+    .timer-unit {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 175, 204, 0.2);
+        padding: 1rem;
+        border-radius: 12px;
+        min-width: 70px;
+        backdrop-filter: blur(5px);
+    }
+    .timer-val {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+    }
+    .timer-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #ff2a6d;
+        margin-top: 0.5rem;
+    }
+
+    .hidden { display: none !important; }
+
+    #screen-7 {
+        background-color: #000;
+        padding: 0;
+        overflow: hidden;
+        display: none; 
+    }
+    #screen-7.active {
+        display: block; 
+    }
+
+    #blackout-curtain {
+        position: fixed;
+        inset: 0;
+        background-color: black;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #blackout-text {
+        color: white;
+        font-family: 'Pacifico', cursive;
+        font-size: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1s ease;
+    }
+
+    #blackout-curtain.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    #blackout-curtain.active #blackout-text {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .screen-exit-cinematic {
+        animation: recedeIntoMemory 1.5s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+        pointer-events: none;
+    }
+
+    @keyframes recedeIntoMemory {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0.95) translateY(-20px);
+            filter: blur(10px) brightness(1.2);
+        }
+    }
+
+    .finale-btn-active {
+        background-color: #ff2a6d !important;
+        color: white !important;
+        transform: scale(1.1);
+        box-shadow: 0 0 20px #ff2a6d;
+    }
+
+    .void-text-anim {
+        animation: voidTextPulse 3s ease-in-out forwards;
+    }
+
+    @keyframes voidTextPulse {
+        0% { opacity: 0; transform: translateY(10px) scale(0.9); letter-spacing: 0px; }
+        20% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 2px; }
+        80% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 2px; }
+        100% { opacity: 0; transform: translateY(-10px) scale(1.1); letter-spacing: 4px; }
+    }
+
+    .glass-pink {
+      background: rgba(255, 175, 204, 0.15);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 175, 204, 0.3);
+    }
+
+    .cake-container { position: relative; height: 250px; display: flex; align-items: center; justify-content: center; margin: 20px 0; }
+    .cake { position: relative; width: 200px; height: 150px; cursor: crosshair; }
+    .plate { width: 220px; height: 90px; bottom: -10px; left: -10px; background-color: #f1f2f6; border-radius: 50%; position: absolute; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .layer { position: absolute; width: 200px; height: 80px; border-radius: 50%; background-color: #ffc2d1; box-shadow: 0 10px 0px #ff8fab; }
+    .layer-top { top: 0px; } .layer-middle { top: 25px; } .layer-bottom { top: 50px; }
+    .icing { top: 2px; left: 5px; background-color: #fff; width: 190px; height: 70px; border-radius: 50%; position: absolute; z-index: 5; }
+    
+    .candle {
+      background-color: #ff2a6d; width: 8px; height: 30px; border-radius: 4px;
+      z-index: 10; position: absolute; transform: translate(-50%, -100%); pointer-events: none;
+    }
+    .flame {
+      position: absolute; background-color: orange; width: 8px; height: 18px;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; top: -20px; left: 50%; margin-left: -4px;
+      z-index: 11; box-shadow: 0 0 10px orange; animation: flicker 0.6s infinite alternate;
+    }
+    .candle.out .flame { display: none; }
+    @keyframes flicker { from { transform: scale(1); } to { transform: scale(1.1) skewX(2deg); } }
+
+    .record {
+      width: 120px; height: 120px;
+      background: #111; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      animation: spin 8s linear infinite;
+      animation-play-state: paused;
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .record-label {
+      width: 40px; height: 40px;
+      background: var(--brat-pink);
+      border-radius: 50%; border: 10px solid var(--hot-pink);
+    }
+
+    .lyrics-container {
+      height: 200px; overflow-y: hidden; position: relative; perspective: 1000px;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+    }
+    .lyric-line {
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.25rem;
+      text-align: center; margin: 0.5rem 0; color: #2d3436; opacity: 0.3; transform: scale(0.9);
+      transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); cursor: default;
+    }
+    .lyric-line.active { opacity: 1; transform: scale(1.1); color: #ff2a6d; text-shadow: 0 2px 10px rgba(255, 42, 109, 0.2); }
+    .float { animation: floating 6s ease-in-out infinite; }
+    @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+  </style>
+</head>
+<body>
+
+  <div style="height: 0; width: 0; position: absolute; visibility: hidden">
+    <svg xmlns="http://www.w3.org/2000/svg">
+      <symbol id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></symbol>
+      <symbol id="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></symbol>
+      <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" /></symbol>
+      <symbol id="icon-sound-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></symbol>
+      <symbol id="icon-sound-off" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></symbol>
+    </svg>
+  </div>
+
+  <div id="bg-elements" class="fixed inset-0 pointer-events-none z-0 opacity-40"></div>
+
+  <div id="blackout-curtain">
+      <div id="blackout-text">Lights out...</div>
+  </div>
+
+  <nav class="fixed top-0 w-full p-4 flex justify-between items-center z-50 bg-white/30 backdrop-blur-md border-b border-pink-100 opacity-0 transition-opacity duration-1000" id="top-nav">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+      <p class="text-[10px] font-bold uppercase tracking-widest text-pink-600">Event: Arsha's Birthday</p>
+    </div>
+    <div class="text-right">
+      <p id="time-display" class="text-xs font-black text-pink-500 font-mono">00:00</p>
+    </div>
+  </nav>
+
+  <div id="nav-controls" class="fixed bottom-10 left-0 w-full flex justify-center gap-6 z-40 opacity-0 transition-opacity duration-500 pointer-events-none">
+    <button onclick="prevScreen()" class="bg-white/80 p-4 rounded-full shadow-lg hover:bg-white text-pink-500 transition pointer-events-auto"><i class="fas fa-chevron-left"></i></button>
+    <button onclick="nextScreen()" class="bg-white/80 p-4 rounded-full shadow-lg hover:bg-white text-pink-500 transition pointer-events-auto"><i class="fas fa-chevron-right"></i></button>
+  </div>
+
+  <main class="relative z-10 w-full h-full">
+
+    <section id="screen-0" class="screen active text-center">
+        <div class="mb-8 relative" onclick="devBypass()">
+            <i class="fas fa-lock text-6xl text-pink-500 animate-pulse"></i>
+            <div class="absolute -top-4 -right-4 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
+        </div>
+        
+        <h1 class="text-3xl md:text-5xl font-black text-white mb-2 font-['Russo_One'] tracking-widest uppercase">Protocol Locked</h1>
+        
+        <p id="lock-subtext" class="text-sm md:text-base text-pink-400 font-mono mb-12 uppercase tracking-[0.2em] border-b border-pink-900 pb-4">Authorization Pending: 23.01.2026</p>
+
+        <div id="timer-container" class="grid grid-cols-4 gap-2 md:gap-6 mb-12">
+            <div class="timer-unit">
+                <div class="timer-val" id="days">00</div>
+                <div class="timer-label">Days</div>
+            </div>
+            <div class="timer-unit">
+                <div class="timer-val" id="hours">00</div>
+                <div class="timer-label">Hrs</div>
+            </div>
+            <div class="timer-unit">
+                <div class="timer-val" id="minutes">00</div>
+                <div class="timer-label">Mins</div>
+            </div>
+            <div class="timer-unit">
+                <div class="timer-val" id="seconds">00</div>
+                <div class="timer-label">Secs</div>
+            </div>
+        </div>
+
+        <div id="late-message" class="hidden flex-col items-center mb-12">
+            <div class="bg-pink-900/40 p-6 rounded-2xl border border-pink-500/30 backdrop-blur-sm max-w-md">
+                <p class="text-xl font-bold text-pink-300 font-['Pacifico'] mb-2">Director, you are late.</p>
+                <p class="text-white text-sm font-mono mb-6 leading-relaxed">
+                    "The timeline waited for no one. Typical Arsha behavior. <br>The party started without you."
+                </p>
+                <button onclick="enterLate()" class="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-pink-500/50 transition transform hover:scale-105">
+                    Enter Protocol
+                </button>
+            </div>
+        </div>
+
+        <p class="text-[10px] text-gray-600 font-mono w-64 leading-relaxed opacity-50">
+            SECURE CONNECTION ESTABLISHED. WAITING FOR TEMPORAL SYNCHRONIZATION WITH ARAB STANDARD TIME (UTC+3). 
+            DIRECTOR ACCESS RESTRICTED.
+        </p>
+    </section>
+
+    <section id="screen-1" class="screen text-center">
+      <div class="absolute -top-10 left-10 text-6xl float" style="animation-delay: 0s;">🎈</div>
+      <div class="absolute top-20 right-10 text-6xl float" style="animation-delay: 1s;">🎈</div>
+
+      <div class="w-24 h-24 bg-gradient-to-br from-pink-300 to-pink-200 rounded-full flex items-center justify-center mb-6 shadow-xl animate-bounce mx-auto">
+        <span class="text-4xl">🎂</span>
+      </div>
+      <h1 class="text-5xl font-extrabold text-gray-800 mb-2 font-['Pacifico']">Protocol: 01.23</h1>
+      <p class="text-xl text-pink-500 font-medium mb-8 font-['Dancing_Script']">"Madame Consultant reporting for duty."</p>
+      
+      <div class="glass-pink p-6 rounded-2xl border-2 border-pink-200 mb-8 w-full max-w-md text-left mx-auto shadow-lg">
+        <p class="text-xs font-bold uppercase text-pink-400 mb-2 font-mono tracking-tighter text-center">Transmission: Gary (The Gadhva)</p>
+        <p class="text-sm italic leading-relaxed text-center text-gray-700">
+          "Listen, Piggy. Since it's your birthday, I've paused the global donkey-wars. Today, the Director is officially exempt from being bullied... mostly."
+        </p>
+      </div>
+
+      <button onclick="startExperience()" class="bg-pink-500 hover:bg-pink-600 text-white px-10 py-4 rounded-full shadow-xl font-bold transition transform hover:scale-105 flex items-center gap-2 mx-auto">
+        <i class="fas fa-play"></i> Initiate Celebration
+      </button>
+    </section>
+
+    <section id="screen-2" class="screen">
+      <h2 class="text-2xl font-black mb-2 text-pink-600 uppercase">Mental Stability Check</h2>
+      <p class="text-xs text-gray-500 mb-8 tracking-widest text-center">Analyzing Director's Stress Levels...</p>
+      
+      <div class="w-full max-w-md glass-pink p-8 rounded-3xl border-2 border-pink-100 mb-8 relative bg-white/50">
+        <div class="mb-10 text-center">
+          <div class="relative w-40 h-40 mx-auto mb-4">
+            <svg class="w-full h-full" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#ffe5ec" stroke-width="8" />
+              <circle id="stress-circle" cx="50" cy="50" r="45" fill="none" stroke="#ff2a6d" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="10" stroke-linecap="round" class="transition-all duration-1000" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="stress-percent" class="text-4xl font-black text-pink-600">95%</span>
+            </div>
+          </div>
+          <p id="stress-msg" class="text-sm font-bold text-gray-700 italic">"I'm gonna smash your donkey face!"</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="adjustStress(5)" class="p-3 bg-white border border-pink-200 rounded-xl text-[10px] font-bold uppercase text-gray-600 hover:bg-red-50">Mention Exams</button>
+          <button onclick="adjustStress(-15)" class="p-3 bg-pink-500 text-white rounded-xl text-[10px] font-bold uppercase shadow-md hover:bg-pink-600">Birthday Treats</button>
+          <button onclick="adjustStress(-10)" class="p-3 bg-white border border-pink-200 rounded-xl text-[10px] font-bold uppercase text-gray-600 hover:bg-green-50">Pet Simba</button>
+          <button onclick="adjustStress(-20)" class="p-3 bg-white border border-pink-200 rounded-xl text-[10px] font-bold uppercase text-gray-600 hover:bg-blue-50">Humiliate Gary</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-3" class="screen">
+      <h2 class="text-4xl font-black text-pink-600 font-['Pacifico'] mb-2">Make a Wish!</h2>
+      <p id="candle-hint" class="text-xs text-gray-500 mt-2 font-bold uppercase animate-pulse">Tap the cake to add candles!</p>
+
+      <div class="cake-container">
+        <div class="cake" id="birthdayCake">
+          <div class="plate"></div>
+          <div class="layer layer-bottom"></div>
+          <div class="layer layer-middle"></div>
+          <div class="layer layer-top"></div>
+          <div class="icing"></div>
+        </div>
+      </div>
+
+      <div class="w-full max-w-xs flex flex-col gap-4">
+        <button id="blow-btn" onclick="blowOut()" class="w-full bg-pink-500 text-white font-bold py-4 rounded-2xl shadow-lg opacity-50 cursor-not-allowed transition-all" disabled>
+          Blow the candles!
+        </button>
+        <p class="text-[10px] text-gray-400 uppercase font-mono text-center">Warning: Not for lab usage.</p>
+      </div>
+    </section>
+
+    <section id="screen-4" class="screen">
+      <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden border border-pink-100 flex flex-col h-[500px]">
+        
+        <div class="bg-pink-500 p-4 text-white flex justify-between items-center font-bold text-xs uppercase tracking-widest shrink-0">
+          <span><i class="fas fa-music"></i> Now Playing</span>
+          <span>Bday FM</span>
+        </div>
+        
+        <div class="p-6 pb-2 shrink-0">
+          <div class="flex justify-between items-center mb-6">
+              <div class="flex flex-col">
+                 <h3 class="font-bold text-xl text-gray-800 leading-none">The Birthday Anthem</h3>
+                 <p class="text-pink-400 text-xs font-mono uppercase tracking-widest mt-1">Dedicated to the Director</p>
+              </div>
+              <div id="record-disk" class="record scale-75">
+                 <div class="record-label"></div>
+              </div>
+          </div>
+
+          <div class="flex items-center gap-4 mb-2">
+              <button onclick="toggleMusic()" id="play-btn" class="w-12 h-12 bg-pink-500 rounded-full text-white shadow-xl hover:scale-110 transition flex items-center justify-center text-lg">
+                <i class="fas fa-play"></i>
+              </button>
+              <div class="h-1 bg-gray-200 flex-grow rounded-full overflow-hidden">
+                 <div id="progress-bar" class="h-full bg-pink-500 w-0 transition-all duration-1000"></div>
+              </div>
+          </div>
+        </div>
+
+        <div class="flex-grow bg-pink-50 relative">
+           <div id="lyrics-wrapper" class="lyrics-container p-6 flex flex-col items-center">
+             <p class="lyric-line" data-time="0">The world spins on, a restless blur,</p>
+              <p class="lyric-line" data-time="2">But time stands still when I’m with her.</p>
+              <p class="lyric-line" data-time="4">You simply smile, and shadows fade,</p>
+              <p class="lyric-line" data-time="6">The finest work the stars have made.</p>
+              <p class="lyric-line" data-time="8">A quiet magic, a sudden light,</p>
+              <p class="lyric-line" data-time="10">You turn the greyest days to bright.</p>
+              <p class="lyric-line" data-time="12">I hope you somehow already know,</p>
+              <p class="lyric-line" data-time="14">You make me smile more than I show.</p>
+              <p class="lyric-line" data-time="16">My favorite place is simply here,</p>
+              <p class="lyric-line" data-time="18">Happy Birthday, Piggy dear.</p>
+              <p class="lyric-line" data-time="20">🎵 🎵 🎵</p>
+           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-5" class="screen bg-yellow-50">
+      <h2 class="text-3xl font-['Pacifico'] text-yellow-600 mb-8">Memory Lane</h2>
+      
+      <div class="relative w-full max-w-lg p-4">
+        <div class="bg-white p-4 pb-16 shadow-2xl rotate-2 transform transition hover:rotate-0 duration-500 border border-gray-100">
+          <div class="aspect-video bg-gray-200 overflow-hidden rounded relative group">
+            <img id="gallery-img" src="watermelon and icecream.jpeg" class="w-full h-full object-cover transition transform group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=2070&auto=format&fit=crop'">
+            <div class="absolute bottom-0 left-0 w-full bg-black/60 text-white p-3 text-center opacity-0 group-hover:opacity-100 transition text-xs font-mono uppercase">
+               Lab Security Footage...
+            </div>
+          </div>
+          <div class="mt-4 font-['Dancing_Script'] text-3xl text-center text-gray-600" id="gallery-caption">Watermelon & Ice Cream 🍉🍦</div>
+        </div>
+
+        <div class="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2 pointer-events-none">
+          <button onclick="changePhoto(-1)" class="pointer-events-auto bg-white/90 p-3 rounded-full shadow hover:bg-white text-pink-500"><i class="fas fa-chevron-left"></i></button>
+          <button onclick="changePhoto(1)" class="pointer-events-auto bg-white/90 p-3 rounded-full shadow hover:bg-white text-pink-500"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-6" class="screen bg-gray-50">
+      <div class="bg-white p-8 md:p-12 max-w-xl w-full shadow-2xl relative mx-4 border-l-8 border-pink-500" style="background-image: linear-gradient(#e1e1e1 1px, transparent 1px); background-size: 100% 1.6rem;">
+        <div class="absolute -top-4 -right-4 w-16 h-16 bg-pink-200 rounded-full flex items-center justify-center shadow-lg rotate-12 text-2xl">💖</div>
+        
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 font-mono tracking-tighter">To: Arsha (The Director)</h2>
+        
+        <div id="typewriter-text" class="font-['Patrick_Hand'] text-2xl leading-relaxed text-gray-700 min-h-[250px]">
+          </div>
+
+        <div class="mt-10 text-right">
+          <p class="font-bold text-gray-500 text-xs uppercase">With Gary energy,</p>
+          <p class="font-['Dancing_Script'] text-3xl text-pink-500">Your Favorite Donkey 🐾</p>
+        </div>
+        
+        <button onclick="goToFinale()" class="mt-10 w-full bg-black text-white py-3 rounded text-sm uppercase tracking-widest font-bold hover:bg-gray-800 transition">One Last Surprise...</button>
+      </div>
+    </section>
+
+    <section id="screen-7" class="screen">
+        <div class="loading-init">
+            <div class="loading-init__header">Loading</div>
+            <div class="loading-init__status">Assembling Shells</div>
+        </div>
+        
+        <div class="stage-container remove">
+            <div class="canvas-container">
+                <canvas id="trails-canvas"></canvas>
+                <canvas id="main-canvas"></canvas>
+            </div>
+            <div class="controls">
+                <div class="btn pause-btn">
+                    <svg fill="white" width="24" height="24"><use href="#icon-pause" xlink:href="#icon-pause"></use></svg>
+                </div>
+                <div class="btn sound-btn">
+                    <svg fill="white" width="24" height="24"><use href="#icon-sound-off" xlink:href="#icon-sound-off"></use></svg>
+                </div>
+                <div class="btn settings-btn">
+                    <svg fill="white" width="24" height="24"><use href="#icon-settings" xlink:href="#icon-settings"></use></svg>
+                </div>
+            </div>
+            
+            <div class="menu hide">
+                <div class="menu__inner-wrap">
+                    <div class="btn btn--bright close-menu-btn">
+                        <svg fill="white" width="24" height="24"><use href="#icon-close" xlink:href="#icon-close"></use></svg>
+                    </div>
+                    <div class="menu__header">Settings</div>
+                    <div class="menu__subheader">For more info, click any label.</div>
+                    <form>
+                        <div class="form-option form-option--select">
+                            <label class="shell-type-label">Shell Type</label>
+                            <select class="shell-type"></select>
+                        </div>
+                        <div class="form-option form-option--select">
+                            <label class="shell-size-label">Shell Size</label>
+                            <select class="shell-size"></select>
+                        </div>
+                        <div class="form-option form-option--select">
+                            <label class="quality-ui-label">Quality</label>
+                            <select class="quality-ui"></select>
+                        </div>
+                        <div class="form-option form-option--select">
+                            <label class="sky-lighting-label">Sky Lighting</label>
+                            <select class="sky-lighting"></select>
+                        </div>
+                        <div class="form-option form-option--select">
+                            <label class="scaleFactor-label">Scale</label>
+                            <select class="scaleFactor"></select>
+                        </div>
+                        <div class="form-option form-option--checkbox">
+                            <label class="auto-launch-label">Auto Fire</label>
+                            <input class="auto-launch" type="checkbox" />
+                        </div>
+                        <div class="form-option form-option--checkbox form-option--finale-mode">
+                            <label class="finale-mode-label">Finale Mode</label>
+                            <input class="finale-mode" type="checkbox" />
+                        </div>
+                        <div class="form-option form-option--checkbox">
+                            <label class="hide-controls-label">Hide Controls</label>
+                            <input class="hide-controls" type="checkbox" />
+                        </div>
+                        <div class="form-option form-option--checkbox form-option--fullscreen">
+                            <label class="fullscreen-label">Fullscreen</label>
+                            <input class="fullscreen" type="checkbox" />
+                        </div>
+                        <div class="form-option form-option--checkbox">
+                            <label class="long-exposure-label">Open Shutter</label>
+                            <input class="long-exposure" type="checkbox" />
+                        </div>
+                    </form>
+                    <div class="credits">
+                        Passionately built by <a href="https://cmiller.tech/" target="_blank">Caleb Miller</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="help-modal">
+            <div class="help-modal__overlay"></div>
+            <div class="help-modal__dialog">
+                <div class="help-modal__header"></div>
+                <div class="help-modal__body"></div>
+                <button type="button" class="help-modal__close-btn">Close</button>
+            </div>
+        </div>
+    </section>
+
+  </main>
+
+  <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/329180/fscreen%401.0.1.js"></script>
+  <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/329180/Stage%400.1.4.js"></script>
+  <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/329180/MyMath.js"></script>
+  
+  <script src="script.js"></script>
+
+  <script>
+    /* TIMER & LOCK CONFIGURATION */
+    // Date: 23 January 2026, 00:00:00, Arab Standard Time (UTC+3)
+    const TARGET_DATE = new Date("2026-01-23T00:00:00+03:00").getTime();
+    
+    // Developer Secret: Click the lock icon 5 times to bypass timer
+    let devClicks = 0;
+
+    let currentIdx = 0; // Starts at 0 now (Lock Screen)
+    const totalScreens = 7;
+    
+    const bgMusic = new Audio('song.mp3');
+    bgMusic.loop = true;
+    
+    let isMusicPlaying = false;
+    let lyricInterval;
+    let currentLyricIdx = 0;
+
+    function initTimer() {
+        const timerInterval = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = TARGET_DATE - now;
+
+            // Calculations
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Display result
+            document.getElementById("days").innerText = days < 10 ? "0" + days : days;
+            document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
+
+            // If count down is finished
+            if (distance < 0) {
+                clearInterval(timerInterval);
+                unlockSite();
+            }
+        }, 1000);
+
+        // Immediate check on load to see if we are already past date (LATE)
+        const now = new Date().getTime();
+        if (now > TARGET_DATE) {
+            clearInterval(timerInterval);
+            showLateMessage();
+        }
+    }
+
+    function showLateMessage() {
+        // Hide standard lock text and timer
+        document.getElementById('lock-subtext').classList.add('hidden');
+        document.getElementById('timer-container').classList.add('hidden');
+        // Show late message
+        document.getElementById('late-message').classList.remove('hidden');
+        document.getElementById('late-message').classList.add('flex');
+    }
+
+    function enterLate() {
+        // This button click allows us to play audio immediately
+        bgMusic.play().then(() => {
+            isMusicPlaying = true;
+        }).catch(e => console.log("Audio failed"));
+        
+        unlockSite(true); // Immediate unlock
+    }
+
+    function unlockSite(instant = false) {
+        // Attempt to play music (might fail if no interaction yet, which is why enterLate() exists)
+        if(!isMusicPlaying) {
+             bgMusic.play().then(() => {
+                isMusicPlaying = true;
+            }).catch(e => {
+                console.log("Auto-play blocked by browser. User must interact.");
+            });
+        }
+
+        // If instant (site visited after date), just jump to screen 1 immediately
+        if(instant) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            showScreen(1);
+        } else {
+            // Animation unlock
+            const lockScreen = document.getElementById('screen-0');
+            lockScreen.style.transform = "scale(2)";
+            lockScreen.style.opacity = "0";
+            setTimeout(() => {
+                showScreen(1);
+            }, 800);
+        }
+    }
+
+    function devBypass() {
+        devClicks++;
+        if(devClicks >= 5) {
+            alert("Developer Override Activated. Welcome, Gary.");
+            // Bypass acts like a late entry click, so we can play music
+            bgMusic.play().then(() => { isMusicPlaying = true; });
+            unlockSite();
+        }
+    }
+
+    function showScreen(idx) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(`screen-${idx}`);
+      
+      if(target) target.classList.add('active');
+      
+      // Update Navigation Bar Visibility
+      const navBar = document.getElementById('top-nav');
+      if (idx === 0) {
+          navBar.style.opacity = '0'; // Hide top nav on lock screen
+      } else if (idx === 7) {
+          navBar.style.opacity = '0'; // Hide top nav on finale
+      } else {
+          navBar.style.opacity = '1'; // Show top nav elsewhere
+      }
+
+      // Update Arrow Controls Visibility
+      const navControls = document.getElementById('nav-controls');
+      if (idx > 1 && idx < 7) {
+        navControls.style.opacity = '1';
+        navControls.style.pointerEvents = 'auto';
+      } else {
+        navControls.style.opacity = '0';
+        navControls.style.pointerEvents = 'none';
+      }
+
+      currentIdx = idx;
+      
+      if (idx === 4) {
+         if (isMusicPlaying) {
+             startLyricsVisuals();
+         }
+      } else {
+         stopLyricsVisuals();
+      }
+
+      if (idx === 6) typeLetter();
+      if (idx === 7) {
+        window.dispatchEvent(new Event('resize'));
+      }
+    }
+
+    function nextScreen() { if (currentIdx < totalScreens) showScreen(currentIdx + 1); }
+    function prevScreen() { if (currentIdx > 1) showScreen(currentIdx - 1); }
+    
+    function startExperience() { 
+        if(!isMusicPlaying) {
+            bgMusic.play().then(() => {
+                isMusicPlaying = true;
+            }).catch(e => {
+                console.log("Audio play blocked");
+            });
+        }
+        nextScreen(); 
+    }
+    
+    function goToFinale() {
+        const letterScreen = document.getElementById('screen-6');
+        const curtain = document.getElementById('blackout-curtain');
+        const curtainText = document.getElementById('blackout-text');
+        const finaleBtn = letterScreen.querySelector('button');
+
+        finaleBtn.innerText = "Here we go...";
+        finaleBtn.classList.add('finale-btn-active');
+        
+        if(isMusicPlaying) {
+            bgMusic.pause();
+            isMusicPlaying = false;
+        }
+
+        setTimeout(() => {
+            letterScreen.classList.add('screen-exit-cinematic');
+        }, 500);
+
+        setTimeout(() => {
+            curtainText.innerText = ""; 
+            curtainText.classList.remove('active'); 
+            curtain.classList.add('active'); 
+        }, 1200);
+
+        setTimeout(() => {
+            if (navigator.vibrate) { navigator.vibrate([50, 200, 50, 200]); }
+
+            curtainText.innerText = "Look up, Director.";
+            curtainText.style.fontFamily = "'Dancing Script', cursive";
+            curtainText.style.color = "#ffafcc";
+            curtainText.classList.add('void-text-anim'); 
+        }, 2500);
+
+        setTimeout(() => {
+            showScreen(7); 
+            window.dispatchEvent(new Event('resize'));
+            
+            const autoLaunchCheckbox = document.querySelector('.auto-launch');
+            if(autoLaunchCheckbox && !autoLaunchCheckbox.checked) {
+                autoLaunchCheckbox.click();
+            }
+
+            const soundBtn = document.querySelector('.sound-btn');
+            if(soundBtn) {
+                 const useTag = soundBtn.querySelector('use');
+                 if(useTag && useTag.getAttribute('href').includes('sound-off')) {
+                     soundBtn.click();
+                 }
+            }
+
+            const canvas = document.getElementById('main-canvas');
+            if(canvas) {
+                const rect = canvas.getBoundingClientRect();
+                const clickEvent = new MouseEvent('mousedown', {
+                    clientX: rect.width / 2,
+                    clientY: rect.height / 2,
+                    bubbles: true
+                });
+                canvas.dispatchEvent(clickEvent);
+                
+                const upEvent = new MouseEvent('mouseup', {
+                      clientX: rect.width / 2,
+                      clientY: rect.height / 2,
+                      bubbles: true
+                });
+                canvas.dispatchEvent(upEvent);
+            }
+
+        }, 4000);
+
+        setTimeout(() => {
+            curtainText.style.opacity = '0';
+            
+            curtain.style.transition = "opacity 2.5s ease-out"; 
+            curtain.classList.remove('active');
+            
+            setTimeout(() => {
+                curtain.style.transition = ""; 
+            }, 3000);
+        }, 5500);
+    }
+
+    function syncLyrics() {
+      const lyrics = document.querySelectorAll('.lyric-line');
+      const wrapper = document.getElementById('lyrics-wrapper');
+      const progressBar = document.getElementById('progress-bar');
+      
+      lyrics.forEach(l => l.classList.remove('active'));
+      
+      if (lyrics[currentLyricIdx]) {
+        const activeLine = lyrics[currentLyricIdx];
+        activeLine.classList.add('active');
+        
+        const containerHeight = wrapper.clientHeight;
+        const lineTop = activeLine.offsetTop;
+        const lineHeight = activeLine.clientHeight;
+        const scrollPos = lineTop - (containerHeight / 2) + (lineHeight / 2);
+        
+        wrapper.scrollTo({ top: scrollPos, behavior: 'smooth' });
+        const progress = ((currentLyricIdx + 1) / lyrics.length) * 100;
+        progressBar.style.width = `${progress}%`;
+      }
+      
+      currentLyricIdx++;
+      if (currentLyricIdx >= lyrics.length) {
+        setTimeout(() => {
+            currentLyricIdx = 0;
+            progressBar.style.width = '0%';
+            wrapper.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 3000);
+      }
+    }
+
+    function toggleMusic() {
+      if (isMusicPlaying) {
+        bgMusic.pause();
+        isMusicPlaying = false;
+        const btn = document.getElementById('play-btn');
+        btn.innerHTML = '<i class="fas fa-play"></i>';
+        stopLyricsVisuals();
+      } else {
+        bgMusic.play();
+        isMusicPlaying = true;
+        startLyricsVisuals();
+      }
+    }
+
+    function startLyricsVisuals() {
+      const btn = document.getElementById('play-btn');
+      const disk = document.getElementById('record-disk');
+      
+      btn.innerHTML = '<i class="fas fa-pause"></i>';
+      disk.style.animationPlayState = 'running';
+      
+      if(lyricInterval) clearInterval(lyricInterval);
+      syncLyrics(); 
+      lyricInterval = setInterval(syncLyrics, 2500);
+    }
+
+    function stopLyricsVisuals() {
+      const disk = document.getElementById('record-disk');
+      if(disk) disk.style.animationPlayState = 'paused';
+      if(lyricInterval) clearInterval(lyricInterval);
+    }
+
+    let stress = 95;
+    function adjustStress(amt) {
+      stress = Math.max(0, Math.min(100, stress + amt));
+      const offset = 283 - (283 * stress) / 100;
+      document.getElementById('stress-circle').style.strokeDashoffset = offset;
+      document.getElementById('stress-percent').innerText = stress + "%";
+      const msg = document.getElementById('stress-msg');
+      if (stress > 80) msg.innerText = "I'm gonna smash your donkey face!";
+      else if (stress > 40) msg.innerText = "Hmph. I might let you live... for now, Gary.";
+      else msg.innerText = "Director is pleased. You survive today, Gary.";
+    }
+
+    const cake = document.getElementById('birthdayCake');
+    const blowBtn = document.getElementById('blow-btn');
+    let candles = [];
+
+    cake.addEventListener('click', (e) => {
+      if (candles.length >= 20) return;
+      const rect = cake.getBoundingClientRect();
+      const x = (e.clientX ?? e.touches[0].clientX) - rect.left;
+      const y = (e.clientY ?? e.touches[0].clientY) - rect.top;
+      if (y > 100 || y < 10) return;
+
+      const candle = document.createElement('div');
+      candle.className = 'candle';
+      candle.style.left = x + 'px';
+      candle.style.top = y + 'px';
+      const flame = document.createElement('div');
+      flame.className = 'flame';
+      candle.appendChild(flame);
+      cake.appendChild(candle);
+      candles.push(candle);
+      if (candles.length > 0) { blowBtn.disabled = false; blowBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+    });
+
+    function blowOut() {
+      candles.forEach((c, i) => setTimeout(() => c.classList.add('out'), i * 100));
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ffafcc', '#ff2a6d', '#ffffff'] });
+      setTimeout(() => nextScreen(), 2000);
+    }
+
+    const photos = [
+      { url: 'watermelon and icecream.jpeg', caption: 'Watermelon & Ice Cream 🍉🍦', fallback: 'https://images.unsplash.com/photo-1560008581-09826d1de69e?q=80&w=1944&auto=format&fit=crop' },
+      { url: 'city ligths.jpeg', caption: 'City Lights 🌃', fallback: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?q=80&w=2000&auto=format&fit=crop' },
+      { url: 'shopping.jpeg', caption: 'Shopping Spree 🛍️', fallback: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop' },
+      { url: 'hibernation.jpeg', caption: 'Hibernation Mode 💤', fallback: 'https://images.unsplash.com/photo-1541781777621-cf11728c37d8?q=80&w=2074&auto=format&fit=crop' },
+      { url: 'beach.jpeg', caption: 'Beach Vibes 🏖️', fallback: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop' },
+      { url: 'bday.jpeg', caption: 'The Celebration 🎂', fallback: 'https://images.unsplash.com/photo-1530103862676-de3c9a59af57?q=80&w=2070&auto=format&fit=crop' }
+    ];
+    let photoIdx = 0;
+    function changePhoto(dir) {
+      photoIdx = (photoIdx + dir + photos.length) % photos.length;
+      const img = document.getElementById('gallery-img');
+      const cap = document.getElementById('gallery-caption');
+      
+      const src = photos[photoIdx].url;
+      const fallback = photos[photoIdx].fallback;
+      
+      img.style.opacity = '0';
+      setTimeout(() => { 
+          img.src = src; 
+          img.onerror = function() { 
+              this.src = fallback;
+              this.onerror = null; 
+          };
+          cap.innerText = photos[photoIdx].caption; 
+          img.style.opacity = '1'; 
+      }, 300);
+    }
+
+    const letter = "They say everything happens for a reason, but meeting you feels like the best glitch in the system. \n\nOne day I'm just a 'Gadhva' minding my own business, and the next, I’m 'forcefully' recruited into the world of a very specific, very stubborn Director. \n\nThank you for being the person I can talk to about absolutely nothing and feel like it was the best part of my day. You have a beautiful heart, even if you try to hide it behind a wall of roasts. \n\nHappy Birthday, Piggy. I'm glad we happened.";
+    let typeWriterRunning = false;
+    
+    function typeLetter() {
+      if(typeWriterRunning) return;
+      typeWriterRunning = true;
+      const el = document.getElementById('typewriter-text');
+      el.innerHTML = '';
+      let i = 0;
+      function type() {
+        if (i < letter.length) {
+          el.innerHTML += letter.charAt(i) === '\n' ? '<br>' : letter.charAt(i);
+          i++;
+          setTimeout(type, 40);
+        }
+      }
+      type();
+    }
+
+    function initBubbles() {
+      const container = document.getElementById('bg-elements');
+      for (let i = 0; i < 15; i++) {
+        const b = document.createElement('div');
+        b.className = 'absolute bg-pink-200 rounded-full opacity-20';
+        const size = Math.random() * 50 + 20;
+        b.style.width = size + 'px'; b.style.height = size + 'px';
+        b.style.left = Math.random() * 100 + 'vw'; b.style.top = Math.random() * 100 + 'vh';
+        b.style.animation = `floating ${Math.random() * 3 + 3}s infinite`;
+        container.appendChild(b);
+      }
+    }
+
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('time-display').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    window.onload = () => { initBubbles(); initTimer(); setInterval(updateTime, 1000); updateTime(); };
+  </script>
+</body>
+</html>
